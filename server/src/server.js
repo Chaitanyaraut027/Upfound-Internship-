@@ -6,6 +6,7 @@ import cors from 'cors';
 import { initSocket } from './services/socket.js';
 import leadsRouter from './routes/leads.js';
 import webhookRouter from './routes/webhook.js';
+import { startPoller } from './services/poller.js';
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -28,4 +29,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
+  startPoller();
 });

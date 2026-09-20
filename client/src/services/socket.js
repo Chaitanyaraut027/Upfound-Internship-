@@ -10,6 +10,9 @@ export function connectSocket(onConnect, onDisconnect, onNewLead) {
 
   socket = io(SOCKET_URL, {
     transports: ['websocket', 'polling'],
+    extraHeaders: {
+      'ngrok-skip-browser-warning': 'true'
+    },
     reconnectionAttempts: 10,
     reconnectionDelay: 2000
   });
