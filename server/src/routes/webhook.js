@@ -1,58 +1,55 @@
-const express = require('express');
-const router = express.Router();
-const { fetchLeadFromMeta } = require('../services/meta');
-const { addLead } = require('./leads');
-const { emitNewLead } = require('../services/socket');
+import { Router } from 'express';
+import { fetchLeadFromMeta } from '../services/meta.js';
+import { saveLead } from './leads.js';
+import { emitNewLead } from '../services/socket.js';
+
+const router = Router();
 
 router.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
+  const expectedToken = process.env.META_VERIFY_TOKEN;
 
-  const verifyToken = process.env.META_VERIFY_TOKEN;
-
-  if (mode === 'subscribe' && token === verifyToken) {
+  if (mode === 'subscribe' && token === expectedToken) {
     return res.status(200).send(challenge);
-  } else {
-    return res.sendStatus(403);
   }
+  return res.sendStatus(403);
 });
 
 router.post('/webhook', async (req, res) => {
   res.status(200).send('EVENT_RECEIVED');
 
   try {
-    const body = req.body;
+    const payload = req.body;
 
-    if (body.object === 'page' && Array.isArray(body.entry)) {
-      for (const entry of body.entry) {
+    if (payload.object === 'page' && Array.isArray(payload.entry)) {
+      for (const entry of payload.entry) {
         if (Array.isArray(entry.changes)) {
           for (const change of entry.changes) {
-            if (change.field === 'leadgen' && change.value) {
-              const leadgenId = change.value.leadgen_id;
-              if (leadgenId) {
-                await processLead(leadgenId);
-              }
+            if (change.field === 'leadgen' && change.value?.leadgen_id) {
+              await processIncomingLead(change.value.leadgen_id);
             }
           }
         }
       }
     }
-  } catch (err) {
-    console.error('Webhook processing error:', err.message);
+  } catch (error) {
+    console.error('Webhook error:', error.message);
   }
 });
 
-async function processLead(leadgenId) {
+async function processIncomingLead(leadgenId) {
   try {
     const lead = await fetchLeadFromMeta(leadgenId);
-    const added = addLead(lead);
-    if (added) {
+    const isSaved = saveLead(lead);
+
+    if (isSaved) {
       emitNewLead(lead);
     }
-  } catch (err) {
-    console.error(`Failed to process lead ${leadgenId}:`, err.message);
+  } catch (error) {
+    console.error(`Error processing lead ID ${leadgenId}:`, error.message);
   }
 }
 
-module.exports = router;
+export default router;

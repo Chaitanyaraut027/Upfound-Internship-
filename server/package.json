@@ -1,8 +1,8 @@
 {
   "name": "meta-lead-server",
   "version": "1.0.0",
+  "type": "module",
   "main": "src/server.js",
-  "type": "commonjs",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"

@@ -1,38 +1,52 @@
-const express = require('express');
-const router = express.Router();
-const { emitNewLead } = require('../services/socket');
+import { Router } from 'express';
+import { emitNewLead } from '../services/socket.js';
 
-const leads = [];
+const router = Router();
+const leadsDatabase = [];
 
-function getLeads() {
-  return leads;
+export function getLeads() {
+  return leadsDatabase;
 }
 
-function addLead(lead) {
-  const existing = leads.find((l) => l.id === lead.id);
-  if (existing) {
+export function saveLead(lead) {
+  const alreadyExists = leadsDatabase.some((existingLead) => existingLead.id === lead.id);
+  if (alreadyExists) {
     return false;
   }
-  leads.unshift(lead);
+  leadsDatabase.unshift(lead);
   return true;
 }
 
 router.get('/leads', (req, res) => {
-  res.json({ success: true, count: leads.length, data: leads });
+  res.json({
+    success: true,
+    count: leadsDatabase.length,
+    data: leadsDatabase
+  });
 });
 
 router.get('/leads/:id', (req, res) => {
-  const lead = leads.find((l) => l.id === req.params.id);
-  if (!lead) {
-    return res.status(404).json({ success: false, error: 'Lead not found' });
+  const targetLead = leadsDatabase.find((lead) => lead.id === req.params.id);
+  if (!targetLead) {
+    return res.status(404).json({
+      success: false,
+      error: 'Lead not found'
+    });
   }
-  res.json({ success: true, data: lead });
+  res.json({
+    success: true,
+    data: targetLead
+  });
 });
 
 router.post('/leads', (req, res) => {
   const { id, name, email, phone, created_time } = req.body;
+
   if (!name && !email) {
-    return res.status(400).json({ success: false, error: 'Name or Email is required' });
+    return res.status(400).json({
+      success: false,
+      error: 'Either name or email is required'
+    });
   }
 
   const newLead = {
@@ -43,17 +57,19 @@ router.post('/leads', (req, res) => {
     created_time: created_time || new Date().toISOString()
   };
 
-  const added = addLead(newLead);
-  if (!added) {
-    return res.status(409).json({ success: false, error: 'Duplicate lead ID' });
+  const isSaved = saveLead(newLead);
+  if (!isSaved) {
+    return res.status(409).json({
+      success: false,
+      error: 'Lead already exists'
+    });
   }
 
   emitNewLead(newLead);
-  res.status(201).json({ success: true, data: newLead });
+  res.status(201).json({
+    success: true,
+    data: newLead
+  });
 });
 
-module.exports = {
-  router,
-  getLeads,
-  addLead
-};
+export default router;
