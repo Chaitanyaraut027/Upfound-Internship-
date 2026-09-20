@@ -3,7 +3,7 @@
     "name": "Meta Lead Sync",
     "slug": "meta-lead-sync",
     "version": "1.0.0",
-    "sdkVersion": "57.0.0",
+    "sdkVersion": "52.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "splash": {
