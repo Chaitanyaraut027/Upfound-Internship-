@@ -1,22 +1,23 @@
 {
   "expo": {
-    "name": "Meta Lead Sync",
-    "slug": "meta-lead-sync",
+    "name": "DualCommerce",
+    "slug": "dual-commerce",
     "version": "1.0.0",
     "sdkVersion": "57.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "splash": {
       "resizeMode": "contain",
-      "backgroundColor": "#0f172a"
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0f172a"
-      }
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.dualcommerce.app"
     }
   }
 }
